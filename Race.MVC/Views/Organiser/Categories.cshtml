@@ -1,0 +1,88 @@
+@model ManageCategoriesViewModel
+@{
+    ViewData["Title"] = "Categories - " + Model.Event.EventName;
+}
+<div class="container mt-4">
+    <a asp-action="Events" class="text-decoration-none"><i class="bi bi-arrow-left"></i> My events</a>
+    <div class="page-title mt-2"><h1>Categories</h1><p>@Model.Event.EventName &bull; @Model.Event.EventDate.ToString("dd MMM yyyy")</p></div>
+
+    @if (ViewBag.ErrorMessage != null)
+    {
+        <div class="alert alert-warning">@ViewBag.ErrorMessage</div>
+    }
+
+    <div class="row g-4">
+        <div class="col-lg-7">
+            <div class="rd-card">
+                <div class="rd-card-header"><h5>Event categories</h5><span class="badge text-bg-dark">@Model.Categories.Count</span></div>
+                @if (Model.Categories.Count == 0)
+                {
+                    <div class="empty-state py-4"><i class="bi bi-tags"></i><p class="mt-2 mb-0">No categories yet. Add one to open enrolment.</p></div>
+                }
+                else
+                {
+                    <div class="table-responsive">
+                        <table class="table mb-0">
+                            <thead><tr><th>Name</th><th>Min. age</th><th>Km</th><th>Start</th><th></th></tr></thead>
+                            <tbody>
+                                @foreach (var c in Model.Categories)
+                                {
+                                    <tr>
+                                        <td class="fw-semibold">@c.CategoryName</td>
+                                        <td>@c.CategoryAge</td>
+                                        <td>@c.CategoryDistance.ToString("0.##")</td>
+                                        <td>@c.StartTime.ToString(@"hh\:mm")</td>
+                                        <td class="text-end text-nowrap">
+                                            <a asp-action="EditCategory" asp-route-eventId="@Model.Event.EventID" asp-route-categoryId="@c.CategoryID" class="btn btn-sm btn-outline-secondary"><i class="bi bi-pencil"></i></a>
+                                            <form asp-action="DeleteCategory" asp-route-eventId="@Model.Event.EventID" asp-route-categoryId="@c.CategoryID" method="post" class="d-inline"
+                                                  onsubmit="return confirm('Delete this category?');">
+                                                <button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <div class="col-lg-5">
+            <div class="rd-card">
+                <div class="rd-card-header"><h5><i class="bi bi-plus-circle text-primary"></i> Add category</h5></div>
+                <div class="rd-card-body">
+                    <form asp-action="AddCategory" method="post" novalidate>
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger py-2"></div>
+                        <input type="hidden" asp-for="NewCategory.EventID" />
+                        <div class="mb-3">
+                            <label asp-for="NewCategory.CategoryName" class="form-label"></label>
+                            <input asp-for="NewCategory.CategoryName" class="form-control" placeholder="e.g. Senior 10K" />
+                            <span asp-validation-for="NewCategory.CategoryName" class="text-danger small"></span>
+                        </div>
+                        <div class="row">
+                            <div class="col-6 mb-3">
+                                <label asp-for="NewCategory.CategoryAge" class="form-label"></label>
+                                <input asp-for="NewCategory.CategoryAge" type="number" min="0" class="form-control" />
+                                <span asp-validation-for="NewCategory.CategoryAge" class="text-danger small"></span>
+                            </div>
+                            <div class="col-6 mb-3">
+                                <label asp-for="NewCategory.CategoryDistance" class="form-label"></label>
+                                <input asp-for="NewCategory.CategoryDistance" type="number" step="0.01" min="0.01" class="form-control" />
+                                <span asp-validation-for="NewCategory.CategoryDistance" class="text-danger small"></span>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label asp-for="NewCategory.StartTime" class="form-label"></label>
+                            <input asp-for="NewCategory.StartTime" type="time" class="form-control"
+                                   value="@Model.NewCategory.StartTime?.ToString(@"hh\:mm")" />
+                            <span asp-validation-for="NewCategory.StartTime" class="text-danger small"></span>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100"><i class="bi bi-plus-lg"></i> Add category</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@section Scripts { <partial name="_ValidationScriptsPartial" /> }

@@ -1,0 +1,101 @@
+@model HomeViewModel
+@{
+    ViewData["Title"] = "Upcoming Events";
+    bool loggedIn = Context.Session.IsLoggedIn();
+}
+
+<section class="rd-hero">
+    <div class="container">
+        <p class="rd-kicker">Run &bull; Walk &bull; Cycle</p>
+        <h1 class="rd-display">Find your next<br />finish line.</h1>
+        <p class="lead mt-3">Browse upcoming events, pick your category and enrol in seconds.</p>
+        @if (!loggedIn)
+        {
+            <a asp-controller="Account" asp-action="Register" class="btn btn-primary btn-lg me-2">Join RaceDay</a>
+            <a asp-controller="Account" asp-action="Login" class="btn btn-outline-light btn-lg">Log in</a>
+        }
+    </div>
+</section>
+
+<div class="container mt-4">
+
+    @if (Model.ErrorMessage != null)
+    {
+        <div class="alert alert-warning"><i class="bi bi-wifi-off"></i> @Model.ErrorMessage</div>
+    }
+
+    <form method="get" asp-action="Index" class="rd-card rd-card-body mb-4">
+        <div class="row g-3 align-items-end">
+            <div class="col-lg-4">
+                <label class="form-label" for="Search">Search</label>
+                <input class="form-control" id="Search" name="Search" value="@Model.Filter.Search" placeholder="Event name or location" />
+            </div>
+            <div class="col-6 col-lg-2">
+                <label class="form-label" for="EventType">Type</label>
+                <select class="form-select" id="EventType" name="EventType">
+                    <option value="">All</option>
+                    @foreach (var t in EventFormViewModel.EventTypes)
+                    {
+                        <option value="@t" selected="@(Model.Filter.EventType == t)">@t</option>
+                    }
+                </select>
+            </div>
+            <div class="col-6 col-lg-2">
+                <label class="form-label" for="FromDate">From date</label>
+                <input type="date" class="form-control" id="FromDate" name="FromDate" value="@Model.Filter.FromDate?.ToString("yyyy-MM-dd")" />
+            </div>
+            <div class="col-6 col-lg-2">
+                <label class="form-label" for="MaxDistance">Max km</label>
+                <input type="number" step="0.1" min="0" class="form-control" id="MaxDistance" name="MaxDistance" value="@Model.Filter.MaxDistance" />
+            </div>
+            <div class="col-6 col-lg-2 d-flex gap-2">
+                <button type="submit" class="btn btn-primary flex-fill"><i class="bi bi-funnel"></i> Filter</button>
+                @if (Model.Filter.IsActive)
+                {
+                    <a asp-action="Index" class="btn btn-outline-secondary" title="Clear filters"><i class="bi bi-x-lg"></i></a>
+                }
+            </div>
+        </div>
+    </form>
+
+    @if (Model.Events.Count == 0 && Model.ErrorMessage == null)
+    {
+        <div class="rd-card empty-state">
+            <i class="bi bi-calendar-x"></i>
+            <h4 class="mt-2">No upcoming events found</h4>
+            <p>@(Model.Filter.IsActive ? "Try changing or clearing your filters." : "Check back soon for new events.")</p>
+        </div>
+    }
+    else
+    {
+        <div class="row g-4">
+            @foreach (var ev in Model.Events)
+            {
+                <div class="col-md-6 col-lg-4">
+                    <div class="rd-card event-card">
+                        <div class="event-banner @EventUi.BannerClass(ev.EventType)">
+                            <i class="bi @EventUi.Icon(ev.EventType) banner-icon"></i>
+                            <span class="type-chip">@ev.EventType</span>
+                        </div>
+                        <div class="rd-card-body d-flex flex-column flex-grow-1">
+                            <h4 class="mb-2">@ev.EventName</h4>
+                            <div class="event-meta mb-1"><i class="bi bi-calendar3"></i> @ev.EventDate.ToString("ddd, dd MMM yyyy")</div>
+                            <div class="event-meta mb-1"><i class="bi bi-geo-alt-fill"></i> @ev.EventLocation</div>
+                            <div class="event-meta mb-3"><i class="bi bi-signpost-split"></i> @ev.EventDistance.ToString("0.##") km</div>
+                            <p class="text-muted small flex-grow-1">
+                                @(ev.EventDescription.Length > 110 ? ev.EventDescription[..110] + "…" : ev.EventDescription)
+                            </p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <a asp-controller="Events" asp-action="Details" asp-route-id="@ev.EventID" class="btn btn-primary btn-sm">View details</a>
+                                @if (Model.EnrolledEventIds.Contains(ev.EventID))
+                                {
+                                    <span class="status-badge status-confirmed"><i class="bi bi-check-circle-fill"></i> Enrolled</span>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>

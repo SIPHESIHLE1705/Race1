@@ -1,0 +1,59 @@
+@model EventEnrolmentsViewModel
+@{
+    ViewData["Title"] = "Results - " + Model.Event.EventName;
+}
+<div class="container mt-4">
+    <a asp-action="Events" class="text-decoration-none"><i class="bi bi-arrow-left"></i> My events</a>
+    <div class="page-title mt-2"><h1>Results entry</h1><p>@Model.Event.EventName &bull; @Model.Event.EventDate.ToString("dd MMM yyyy") &bull; Saved results are published to participants immediately.</p></div>
+
+    @if (ViewBag.ErrorMessage != null)
+    {
+        <div class="alert alert-warning">@ViewBag.ErrorMessage</div>
+    }
+
+    @if (Model.Enrolments.Count == 0)
+    {
+        <div class="rd-card empty-state"><i class="bi bi-stopwatch"></i><h4 class="mt-2">Nobody to record yet</h4><p>Results can be captured once participants have enrolled.</p></div>
+    }
+    else
+    {
+        <div class="rd-card">
+            <ul class="list-group list-group-flush">
+                @foreach (var e in Model.Enrolments)
+                {
+                    var t = e.FinishingTime ?? TimeSpan.Zero;
+                    <li class="list-group-item py-3">
+                        <form asp-action="SaveResult" method="post" class="row g-2 align-items-end">
+                            <input type="hidden" name="EventID" value="@Model.Event.EventID" />
+                            <input type="hidden" name="EnrolmentID" value="@e.EnrolmentID" />
+                            <input type="hidden" name="ResultID" value="@e.ResultID" />
+
+                            <div class="col-lg-4">
+                                <div class="fw-semibold">@e.ParticipantName</div>
+                                <small class="text-muted">@e.CategoryName</small>
+                                <div class="mt-1"><partial name="_StatusBadge" model="e.Status" /></div>
+                            </div>
+                            <div class="col-6 col-lg-1"><label class="form-label small mb-0">Hours</label>
+                                <input type="number" name="Hours" min="0" max="23" class="form-control" value="@(e.ResultID.HasValue ? t.Hours : 0)" /></div>
+                            <div class="col-6 col-lg-1"><label class="form-label small mb-0">Min</label>
+                                <input type="number" name="Minutes" min="0" max="59" class="form-control" value="@(e.ResultID.HasValue ? t.Minutes : 0)" /></div>
+                            <div class="col-6 col-lg-1"><label class="form-label small mb-0">Sec</label>
+                                <input type="number" name="Seconds" min="0" max="59" class="form-control" value="@(e.ResultID.HasValue ? t.Seconds : 0)" /></div>
+                            <div class="col-6 col-lg-2"><label class="form-label small mb-0">Position</label>
+                                <input type="number" name="Position" min="1" required class="form-control" value="@e.FinishingPosition" /></div>
+                            <div class="col-lg-3 text-lg-end">
+                                <button type="submit" class="btn btn-primary btn-sm"><i class="bi bi-cloud-check"></i> @(e.ResultID.HasValue ? "Update" : "Save & publish")</button>
+                                @if (e.ResultID.HasValue)
+                                {
+                                    <button type="submit" class="btn btn-outline-danger btn-sm" title="Remove result"
+                                            formaction="@Url.Action("DeleteResult", new { eventId = Model.Event.EventID, resultId = e.ResultID })"
+                                            formnovalidate onclick="return confirm('Remove this result?');"><i class="bi bi-trash"></i></button>
+                                }
+                            </div>
+                        </form>
+                    </li>
+                }
+            </ul>
+        </div>
+    }
+</div>

@@ -1,0 +1,50 @@
+@model List<MyResultDto>
+@{
+    ViewData["Title"] = "My Results";
+}
+<div class="container mt-4">
+    <div class="page-title"><h1>My Results</h1><p>Your personal race history.</p></div>
+
+    @if (ViewBag.ErrorMessage != null)
+    {
+        <div class="alert alert-warning">@ViewBag.ErrorMessage</div>
+    }
+
+    @if (Model.Count == 0)
+    {
+        <div class="rd-card empty-state">
+            <i class="bi bi-trophy"></i>
+            <h4 class="mt-2">No results yet</h4>
+            <p>Results appear here after an organiser publishes them for events you've completed.</p>
+        </div>
+    }
+    else
+    {
+        <div class="row g-3 mb-4">
+            <div class="col-md-4"><div class="rd-card stat-card"><div class="stat-number">@Model.Count</div><div class="stat-label">Races completed</div></div></div>
+            <div class="col-md-4"><div class="rd-card stat-card alt"><div class="stat-number">@EventUi.Ordinal(Model.Min(r => r.FinishingPosition))</div><div class="stat-label">Best position</div></div></div>
+            <div class="col-md-4"><div class="rd-card stat-card hot"><div class="stat-number">@Model.Count(r => r.FinishingPosition <= 3)</div><div class="stat-label">Podium finishes</div></div></div>
+        </div>
+
+        <div class="rd-card table-responsive">
+            <table class="table table-hover mb-0 rd-table">
+                <thead><tr><th>Event</th><th>Date</th><th>Category</th><th>Finish time</th><th>Position</th></tr></thead>
+                <tbody>
+                    @foreach (var r in Model)
+                    {
+                        <tr>
+                            <td class="fw-semibold"><a asp-controller="Events" asp-action="Details" asp-route-id="@r.EventID" class="text-decoration-none">@r.EventName</a></td>
+                            <td>@r.EventDate.ToString("dd MMM yyyy")</td>
+                            <td>@r.CategoryName</td>
+                            <td><span class="time-text">@r.FinishingTime.ToString(@"hh\:mm\:ss")</span></td>
+                            <td>
+                                <span class="position-badge">@EventUi.Ordinal(r.FinishingPosition)</span>
+                                <span class="text-muted small">out of @r.TotalFinishers finishers</span>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>

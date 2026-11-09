@@ -1,0 +1,46 @@
+@model ProfileViewModel
+@{
+    ViewData["Title"] = "My Profile";
+}
+<div class="container mt-4">
+    <div class="page-title"><h1>My Profile</h1><p>View and update your personal information.</p></div>
+    <div class="row g-4">
+        <div class="col-md-4">
+            <div class="rd-card rd-card-body text-center">
+                <div class="avatar-lg">@EventUi.Initials(Model.FullName)</div>
+                <h4 class="mb-1">@Model.FullName</h4>
+                <span class="role-pill" style="background:var(--rd-ink);color:var(--rd-yellow)">@Model.UserRole</span>
+                <hr />
+                <label class="form-label small text-muted">Profile picture</label>
+                <input type="file" class="form-control form-control-sm" disabled />
+                <div class="form-text">Picture upload will be enabled with cloud storage.</div>
+            </div>
+        </div>
+        <div class="col-md-8">
+            <div class="rd-card">
+                <div class="rd-card-header"><h5>Personal information</h5></div>
+                <div class="rd-card-body">
+                    <form asp-action="Profile" method="post" novalidate>
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger py-2"></div>
+                        <div class="mb-3">
+                            <label asp-for="FullName" class="form-label"></label>
+                            <input asp-for="FullName" class="form-control" />
+                            <span asp-validation-for="FullName" class="text-danger small"></span>
+                        </div>
+                        <div class="mb-3">
+                            <label asp-for="EmailAddress" class="form-label"></label>
+                            <input asp-for="EmailAddress" class="form-control" />
+                            <span asp-validation-for="EmailAddress" class="text-danger small"></span>
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label">Role</label>
+                            <input class="form-control" value="@Model.UserRole" disabled />
+                        </div>
+                        <button type="submit" class="btn btn-primary"><i class="bi bi-save"></i> Save changes</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@section Scripts { <partial name="_ValidationScriptsPartial" /> }

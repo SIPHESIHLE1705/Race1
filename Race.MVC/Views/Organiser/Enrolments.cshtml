@@ -1,0 +1,48 @@
+@model EventEnrolmentsViewModel
+@{
+    ViewData["Title"] = "Enrolments - " + Model.Event.EventName;
+}
+<div class="container mt-4">
+    <a asp-action="Events" class="text-decoration-none"><i class="bi bi-arrow-left"></i> My events</a>
+    <div class="page-title mt-2 d-flex flex-wrap justify-content-between align-items-center">
+        <div><h1>Enrolments</h1><p>@Model.Event.EventName &bull; @Model.Event.EventDate.ToString("dd MMM yyyy")</p></div>
+        <a asp-action="Results" asp-route-eventId="@Model.Event.EventID" class="btn btn-outline-primary"><i class="bi bi-stopwatch"></i> Enter results</a>
+    </div>
+
+    @if (ViewBag.ErrorMessage != null)
+    {
+        <div class="alert alert-warning">@ViewBag.ErrorMessage</div>
+    }
+
+    <div class="d-flex flex-wrap gap-2 mb-3">
+        <span class="status-badge status-other">Total: @Model.Enrolments.Count</span>
+        <span class="status-badge status-confirmed">Confirmed: @Model.Enrolments.Count(e => e.Status == "Confirmed")</span>
+        <span class="status-badge status-pending">Pending: @Model.Enrolments.Count(e => e.Status == "Pending")</span>
+        <span class="status-badge status-completed">Completed: @Model.Enrolments.Count(e => e.Status == "Completed")</span>
+    </div>
+
+    @if (Model.Enrolments.Count == 0)
+    {
+        <div class="rd-card empty-state"><i class="bi bi-people"></i><h4 class="mt-2">No participants yet</h4><p>Enrolments will appear here as people sign up.</p></div>
+    }
+    else
+    {
+        <div class="rd-card table-responsive">
+            <table class="table table-hover mb-0 rd-table">
+                <thead><tr><th>Participant</th><th>Email</th><th>Category</th><th>Enrolled on</th><th>Status</th></tr></thead>
+                <tbody>
+                    @foreach (var e in Model.Enrolments)
+                    {
+                        <tr>
+                            <td class="fw-semibold">@e.ParticipantName</td>
+                            <td>@e.ParticipantEmail</td>
+                            <td>@e.CategoryName</td>
+                            <td>@e.EnrolmentDate.ToString("dd MMM yyyy")</td>
+                            <td><partial name="_StatusBadge" model="e.Status" /></td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>

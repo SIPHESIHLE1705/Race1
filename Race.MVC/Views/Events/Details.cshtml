@@ -1,0 +1,106 @@
+@model EventDetailsViewModel
+@{
+    var ev = Model.Event;
+    ViewData["Title"] = ev.EventName;
+}
+<div class="container mt-4">
+    <a asp-controller="Home" asp-action="Index" class="text-decoration-none"><i class="bi bi-arrow-left"></i> All events</a>
+
+    <div class="rd-card mt-3 overflow-hidden">
+        <div class="event-banner banner-large @EventUi.BannerClass(ev.EventType)">
+            <i class="bi @EventUi.Icon(ev.EventType) banner-icon"></i>
+            <div>
+                <span class="type-chip">@ev.EventType</span>
+                <h1 class="text-white mt-2 mb-0">@ev.EventName</h1>
+            </div>
+        </div>
+        <div class="rd-card-body">
+            <div class="row g-4">
+                <div class="col-lg-7">
+                    <div class="d-flex flex-wrap gap-4 mb-3 event-meta">
+                        <span><i class="bi bi-calendar3"></i> @ev.EventDate.ToString("dddd, dd MMMM yyyy")</span>
+                        <span><i class="bi bi-geo-alt-fill"></i> @ev.EventLocation</span>
+                        <span><i class="bi bi-signpost-split"></i> @ev.EventDistance.ToString("0.##") km</span>
+                    </div>
+                    <h5>About this event</h5>
+                    <p>@ev.EventDescription</p>
+
+                    <h5 class="mt-4">Available categories</h5>
+                    @if (Model.Categories.Count == 0)
+                    {
+                        <p class="text-muted">The organiser hasn't added any categories yet.</p>
+                    }
+                    else
+                    {
+                        <div class="table-responsive">
+                            <table class="table rd-table">
+                                <thead><tr><th>Category</th><th>Min. age</th><th>Distance</th><th>Start time</th></tr></thead>
+                                <tbody>
+                                    @foreach (var c in Model.Categories)
+                                    {
+                                        <tr>
+                                            <td><strong>@c.CategoryName</strong></td>
+                                            <td>@(c.CategoryAge == 0 ? "All ages" : c.CategoryAge + "+")</td>
+                                            <td>@c.CategoryDistance.ToString("0.##") km</td>
+                                            <td>@c.StartTime.ToString(@"hh\:mm")</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                </div>
+
+                <div class="col-lg-5">
+                    <div class="rd-card rd-card-body" style="background:#fafbfe">
+                        <h4 class="mb-3"><i class="bi bi-ticket-perforated text-primary"></i> Enter this event</h4>
+
+                        @if (Model.IsPast)
+                        {
+                            <div class="alert alert-secondary mb-0">This event has already taken place.</div>
+                        }
+                        else if (!Model.IsLoggedIn)
+                        {
+                            <p class="text-muted">Log in as a participant to enrol.</p>
+                            <a asp-controller="Account" asp-action="Login"
+                               asp-route-returnUrl="@Context.Request.Path" class="btn btn-primary w-100 mb-2">Log in</a>
+                            <a asp-controller="Account" asp-action="Register" class="btn btn-outline-primary w-100">Create an account</a>
+                        }
+                        else if (Model.Role != Roles.Participant)
+                        {
+                            <div class="alert alert-info mb-0">Organiser accounts can't enrol in events.</div>
+                        }
+                        else if (Model.AlreadyEnrolled)
+                        {
+                            <div class="alert alert-success"><i class="bi bi-check-circle-fill"></i> You're enrolled in this event.</div>
+                            <a asp-controller="Participant" asp-action="MyEnrolments" class="btn btn-outline-primary w-100">View my enrolments</a>
+                        }
+                        else if (Model.Categories.Count == 0)
+                        {
+                            <div class="alert alert-warning mb-0">Enrolment opens once categories are added.</div>
+                        }
+                        else
+                        {
+                            <form asp-controller="Events" asp-action="Enrol" method="post">
+                                <input type="hidden" name="eventID" value="@ev.EventID" />
+                                <p class="text-muted small">Select your category:</p>
+                                @foreach (var c in Model.Categories)
+                                {
+                                    <label class="category-option mb-2">
+                                        <input type="radio" class="form-check-input me-2" name="categoryID" value="@c.CategoryID" required />
+                                        <strong>@c.CategoryName</strong>
+                                        <span class="text-muted small d-block ms-4">
+                                            @c.CategoryDistance.ToString("0.##") km &bull; starts @c.StartTime.ToString(@"hh\:mm")
+                                            &bull; @(c.CategoryAge == 0 ? "all ages" : c.CategoryAge + "+")
+                                        </span>
+                                    </label>
+                                }
+                                <button type="submit" class="btn btn-primary w-100 mt-2"><i class="bi bi-lightning-charge-fill"></i> Enrol now</button>
+                            </form>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

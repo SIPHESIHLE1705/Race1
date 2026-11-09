@@ -1,0 +1,60 @@
+@model List<MyEnrolmentDto>
+@{
+    ViewData["Title"] = "My Enrolments";
+}
+<div class="container mt-4">
+    <div class="page-title"><h1>My Enrolments</h1><p>Every event you've entered and where it stands.</p></div>
+
+    @if (ViewBag.ErrorMessage != null)
+    {
+        <div class="alert alert-warning">@ViewBag.ErrorMessage</div>
+    }
+
+    @if (Model.Count == 0)
+    {
+        <div class="rd-card empty-state">
+            <i class="bi bi-ticket-perforated"></i>
+            <h4 class="mt-2">You haven't enrolled in any events</h4>
+            <a asp-controller="Home" asp-action="Index" class="btn btn-primary mt-2">Browse events</a>
+        </div>
+    }
+    else
+    {
+        <div class="row g-4">
+            @foreach (var m in Model)
+            {
+                <div class="col-md-6">
+                    <div class="rd-card event-card">
+                        <div class="event-banner @EventUi.BannerClass(m.EventType)" style="height:80px">
+                            <i class="bi @EventUi.Icon(m.EventType) banner-icon" style="font-size:2.4rem"></i>
+                            <span class="type-chip">@m.EventType</span>
+                        </div>
+                        <div class="rd-card-body">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <h4 class="mb-0">@m.EventName</h4>
+                                <partial name="_StatusBadge" model="m.Status" />
+                            </div>
+                            <div class="event-meta mb-1"><i class="bi bi-calendar3"></i> @m.EventDate.ToString("ddd, dd MMM yyyy")</div>
+                            <div class="event-meta mb-1"><i class="bi bi-geo-alt-fill"></i> @m.EventLocation</div>
+                            <div class="event-meta mb-3"><i class="bi bi-tags-fill"></i> @m.CategoryName &bull; enrolled @m.EnrolmentDate.ToString("dd MMM yyyy")</div>
+                            <div class="d-flex gap-2">
+                                <a asp-controller="Events" asp-action="Details" asp-route-id="@m.EventID" class="btn btn-outline-primary btn-sm">View event</a>
+                                @if (m.Status == "Completed")
+                                {
+                                    <a asp-action="MyResults" class="btn btn-outline-secondary btn-sm"><i class="bi bi-trophy"></i> See result</a>
+                                }
+                                else if (m.Status == "Confirmed")
+                                {
+                                    <form asp-action="CancelEnrolment" asp-route-id="@m.EnrolmentID" method="post"
+                                          onsubmit="return confirm('Cancel your enrolment in &quot;@m.EventName&quot;?');">
+                                        <button type="submit" class="btn btn-outline-danger btn-sm">Cancel enrolment</button>
+                                    </form>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>

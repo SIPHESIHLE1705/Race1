@@ -1,0 +1,71 @@
+@model OrganiserDashboardViewModel
+@{
+    ViewData["Title"] = "Organiser Dashboard";
+}
+<div class="container mt-4">
+    <div class="page-title d-flex flex-wrap justify-content-between align-items-center">
+        <div><h1>Welcome back, @Model.OrganiserName.Split(' ')[0]</h1><p>Here's how your events are performing.</p></div>
+        <a asp-action="CreateEvent" class="btn btn-primary"><i class="bi bi-plus-circle"></i> Create event</a>
+    </div>
+
+    @if (ViewBag.ErrorMessage != null)
+    {
+        <div class="alert alert-warning">@ViewBag.ErrorMessage</div>
+    }
+
+    <div class="row g-3 mb-4">
+        <div class="col-md-4"><div class="rd-card stat-card"><div class="stat-number">@Model.TotalEvents</div><div class="stat-label">Events created</div></div></div>
+        <div class="col-md-4"><div class="rd-card stat-card alt"><div class="stat-number">@Model.TotalEnrolments</div><div class="stat-label">Total enrolments</div></div></div>
+        <div class="col-md-4"><div class="rd-card stat-card hot"><div class="stat-number">@Model.UpcomingEvents.Count</div><div class="stat-label">Upcoming events</div></div></div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-lg-7">
+            <div class="rd-card">
+                <div class="rd-card-header"><h5><i class="bi bi-people-fill text-primary"></i> Enrolments per event</h5></div>
+                <div class="rd-card-body">
+                    @if (Model.Events.Count == 0)
+                    {
+                        <div class="empty-state py-3"><i class="bi bi-flag"></i><p class="mt-2 mb-0">You haven't created any events yet.</p></div>
+                    }
+                    else
+                    {
+                        @foreach (var e in Model.Events)
+                        {
+                            int pct = (int)Math.Round(100.0 * e.EnrolmentCount / Model.MaxEnrolments);
+                            <div class="mb-3">
+                                <div class="d-flex justify-content-between">
+                                    <a asp-action="Enrolments" asp-route-eventId="@e.EventID" class="fw-semibold text-decoration-none">@e.EventName</a>
+                                    <span class="text-muted">@e.EnrolmentCount enrolled</span>
+                                </div>
+                                <div class="progress"><div class="progress-bar" style="width:@pct%"></div></div>
+                            </div>
+                        }
+                    }
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-5">
+            <div class="rd-card">
+                <div class="rd-card-header"><h5><i class="bi bi-calendar-event text-primary"></i> Upcoming event dates</h5></div>
+                <ul class="list-group list-group-flush">
+                    @if (Model.UpcomingEvents.Count == 0)
+                    {
+                        <li class="list-group-item text-muted">No upcoming events.</li>
+                    }
+                    @foreach (var e in Model.UpcomingEvents.Take(6))
+                    {
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <div class="fw-semibold">@e.EventName</div>
+                                <small class="text-muted"><i class="bi bi-geo-alt"></i> @e.EventLocation</small>
+                            </div>
+                            <span class="badge text-bg-dark">@e.EventDate.ToString("dd MMM yyyy")</span>
+                        </li>
+                    }
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>

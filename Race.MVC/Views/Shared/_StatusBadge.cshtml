@@ -1,0 +1,11 @@
+@model string
+@{
+    var (css, icon) = Model switch
+    {
+        "Confirmed" => ("status-confirmed", "bi-check-circle-fill"),
+        "Pending"   => ("status-pending", "bi-hourglass-split"),
+        "Completed" => ("status-completed", "bi-flag-fill"),
+        _           => ("status-other", "bi-circle")
+    };
+}
+<span class="status-badge @css"><i class="bi @icon"></i> @Model</span>
