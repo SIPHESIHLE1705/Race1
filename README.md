@@ -4,3 +4,5 @@
 
 Visual Studio: open RaceDay.sln, right-click the solution > Configure Startup Projects >
 "Multiple startup projects": set Race = Start, Race.MVC = Start (both on the https profile).
+![Uploading image.png…]()
+
