@@ -1,0 +1,45 @@
+name: CI
+
+# Runs on every push and pull request to main/master:
+# restores packages and builds the API (Race) and the website (Race.MVC).
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+permissions:
+  contents: read
+
+# Cancel an older run of the same branch when a new commit arrives
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  SOLUTION: RaceDay.sln          # change this if your .sln file has another name or folder
+  DOTNET_NOLOGO: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+
+jobs:
+  build:
+    name: Build solution
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+
+      - name: Set up .NET 8
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Restore packages
+        run: dotnet restore "$SOLUTION"
+
+      - name: Build (Release)
+        run: dotnet build "$SOLUTION" --configuration Release --no-restore
+
+      - name: Publish website (build check)
+        run: dotnet publish Race.MVC/Race.MVC.csproj --configuration Release --no-build --output ./publish/Race.MVC
